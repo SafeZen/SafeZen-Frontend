@@ -13,7 +13,6 @@ const Web3Reducer = (state, action) => {
         ...state,
         userOnChainId: action.value.userOnChainId,
         provider: action.value.provider,
-        address: action.value.address,
       };
     case SET_ADDRESS:
       return {

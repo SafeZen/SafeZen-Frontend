@@ -13,16 +13,17 @@ const useWeb3Hook = () => {
 
   const onConnect = async () => {
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const _selectedProvider = window.ethereum.providers
+        ? window.ethereum.selectedProvider
+        : window.ethereum;
+      const provider = new ethers.providers.Web3Provider(_selectedProvider);
       const { chainId } = await provider.getNetwork();
       const signer = provider.getSigner();
-      const address = await signer.getAddress();
       appDispatch({
         type: SET_WEB3_PROVIDER,
         value: {
           userOnChainId: Number(chainId),
           provider,
-          address,
         },
       });
     } catch (error) {

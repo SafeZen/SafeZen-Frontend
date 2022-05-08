@@ -1,3 +1,4 @@
+import { useContext } from 'react';
 import { activateInjectedProvider, ProviderType } from '../../utils/injected';
 import { useWeb3React } from '@web3-react/core';
 import {
@@ -6,8 +7,10 @@ import {
 } from '../../connectors';
 import { getDisplayAddress } from '../../utils';
 import useWeb3Hook from '../../hooks/useWeb3Hook';
+import { Web3Context } from '../../context/web3Context';
 
 const ConnectWallet = () => {
+  const { appState: Web3State } = useContext(Web3Context);
   const { account, active, activate, deactivate } = useWeb3React();
   const { onConnect } = useWeb3Hook();
 
@@ -38,6 +41,10 @@ const ConnectWallet = () => {
           <p>Address: </p>
           {getDisplayAddress(account)}
           <button onClick={deactivate}>Disconnect</button>
+          <button onClick={() => console.log(Web3State)}>
+            Print Web3State
+          </button>
+          {Web3State.address}
         </>
       ) : (
         <>

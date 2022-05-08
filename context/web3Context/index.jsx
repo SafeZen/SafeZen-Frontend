@@ -4,7 +4,6 @@ import AppReducer from './reducer';
 export const InitialAppContextState = {
   userOnChainId: 0,
   provider: null,
-  address: '',
 };
 
 export const Web3Context = createContext({});
