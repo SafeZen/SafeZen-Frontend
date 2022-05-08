@@ -1,0 +1,19 @@
+$primary-color: #ffffff;
+$secondary-color: #ffffff;
+
+$screen-xs: 320px;
+$screen-s: 480px;
+$screen-m: 768px;
+$screen-l: 1024px;
+$screen-xl: 1200px;
+$screen-xxl: 1450px;
+
+:export {
+  primaryColor: $primary-color;
+  screenXS: $screen-xs;
+  screenS: $screen-s;
+  screenM: $screen-m;
+  screenL: $screen-l;
+  screenXL: $screen-xl;
+  screenXXL: $screen-xxl;
+}
