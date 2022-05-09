@@ -4,7 +4,12 @@
  */
 import { useState, useEffect } from 'react';
 
-const getScrollDimensions = (window) => {
+interface IDimension {
+  scrollX: number;
+  scrollY: number;
+}
+
+const getScrollDimensions = (window: Window) => {
   const { scrollX, scrollY } = window;
   return {
     scrollX,
@@ -13,7 +18,7 @@ const getScrollDimensions = (window) => {
 };
 
 const useScrollDimensions = () => {
-  const [scrollDimensions, setScrollDimensions] = useState({
+  const [scrollDimensions, setScrollDimensions] = useState<IDimension>({
     scrollX: 0,
     scrollY: 0,
   });

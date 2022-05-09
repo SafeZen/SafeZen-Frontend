@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
 import envConfig from '../utils/envConfig';
-import { Web3Context } from '../context/web3Context/index.jsx';
+import { Web3Context } from '../context/web3Context/index';
 import useWeb3Hook from './useWeb3Hook';
 
 const useNetwork = () => {

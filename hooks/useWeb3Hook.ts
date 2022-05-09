@@ -3,7 +3,7 @@
  * @returns string
  */
 import { useContext } from 'react';
-import { Web3Context } from '../context/web3Context/index.jsx';
+import { Web3Context } from '../context/web3Context/index';
 import { ethers } from 'ethers';
 
 import { SET_WEB3_PROVIDER } from '../context/actionType';

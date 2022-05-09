@@ -1,23 +1,22 @@
 /* eslint-disable no-case-declarations */
-import {
-  SET_WEB3_PROVIDER,
-  SET_ADDRESS,
-  RESET_WEB3_PROVIDER,
-} from '../actionType';
-import { InitialAppContextState } from './index.jsx';
+import { SET_WEB3_PROVIDER, RESET_WEB3_PROVIDER } from '../actionType';
+import { InitialAppContextState, IAppContextState } from '.';
 
-const Web3Reducer = (state, action) => {
+export interface IAction {
+  type: typeof SET_WEB3_PROVIDER | typeof RESET_WEB3_PROVIDER;
+  value: any;
+}
+
+const Web3Reducer = (
+  state: IAppContextState,
+  action: IAction
+): IAppContextState => {
   switch (action.type) {
     case SET_WEB3_PROVIDER:
       return {
         ...state,
         userOnChainId: action.value.userOnChainId,
         provider: action.value.provider,
-      };
-    case SET_ADDRESS:
-      return {
-        ...state,
-        address: action.value.address,
       };
     case RESET_WEB3_PROVIDER:
       return InitialAppContextState;
