@@ -3,7 +3,7 @@
  * @param {*} address - string
  * @returns string
  */
-export const getDisplayAddress = (address) => {
+export const getDisplayAddress = (address: string) => {
   if (!address) {
     return '';
   } else {

@@ -8,10 +8,10 @@ import envConfig from './envConfig';
  * @param {*} chainId - number
  * @returns Contract
  */
-export const getContract = (contractName, chainId) => {
+export const getContract = (contractName: string, chainId: number) => {
   let chain = chainMap[chainId];
 
-  if (!envConfig.CONTRACT_ADDRESS || !envConfig.CONTRACT_ADDRESS) return;
+  if (!envConfig.CONTRACT_ADDRESS || !envConfig.CONTRACT_DEPLOYED) return;
 
   try {
     /* eslint-disable global-require */
@@ -34,10 +34,14 @@ export const getContract = (contractName, chainId) => {
  * @param {*} wsProvider - WebSocketProvider
  * @returns Contract
  */
-export const getWsContract = (contractName, chainId, wsProvider) => {
+export const getWsContract = (
+  contractName: string,
+  chainId: number,
+  wsProvider: any
+) => {
   let chain = chainMap[chainId];
 
-  if (!envConfig.CONTRACT_ADDRESS || !envConfig.CONTRACT_ADDRESS) return;
+  if (!envConfig.CONTRACT_ADDRESS || !envConfig.CONTRACT_DEPLOYED) return;
 
   try {
     /* eslint-disable global-require */
