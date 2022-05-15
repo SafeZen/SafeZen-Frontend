@@ -4,6 +4,7 @@ import { useWeb3React } from '@web3-react/core';
 import {
   injected as MetaMaskConnector,
   coinbaseWallet as CoinbaseConnector,
+  walletlink as WalletLinkConnector,
 } from '../../connectors';
 import { getDisplayAddress } from '../../utils';
 import useWeb3Hook from '../../hooks/useWeb3Hook';
@@ -34,6 +35,15 @@ const ConnectWallet = () => {
     }
   };
 
+  const handleConnectWalletLink = async () => {
+    try {
+      activate(WalletLinkConnector);
+      await onConnect();
+    } catch (error) {
+      console.log('Error from connecting to Coinbase', error);
+    }
+  };
+
   return (
     <div>
       {account && active ? (
@@ -50,6 +60,7 @@ const ConnectWallet = () => {
         <>
           <button onClick={handleConnectMetamask}>Metamask</button>
           <button onClick={handleConnectCoinbase}>Coinbase</button>
+          <button onClick={handleConnectWalletLink}>WalletLink</button>
         </>
       )}
     </div>
