@@ -10,7 +10,8 @@ const checkNetworkName = () => {
     window.location.hostname &&
     window.location.hostname === 'localhost'
   ) {
-    return 31337;
+    // return 31337;
+    return 137;
   } else if (envConfig.MAINNET) {
     return 137;
   } else {
@@ -41,8 +42,13 @@ export const coinbaseWallet = new WalletLinkConnector({
   supportedChainIds: [31337, 137, 80001],
 });
 
-export const walletlink = new WalletLinkConnector({
-  url: generateRPCUrl(checkNetworkName()),
-  appName: 'SafeZen',
-  supportedChainIds: [31337, 137, 80001],
+export const walletConnect = new WalletConnectConnector({
+  rpc: {
+    137: generateRPCUrl(137),
+    80001: generateRPCUrl(80001),
+    31337: generateRPCUrl(31337),
+  },
+  infuraId: envConfig.INFURA_ID,
+  bridge: 'https://bridge.walletconnect.org',
+  qrcode: true,
 });

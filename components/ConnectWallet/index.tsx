@@ -1,25 +1,30 @@
-import { useContext } from 'react';
+/* eslint-disable @next/next/no-img-element */
+import { useContext, useEffect } from 'react';
+import styles from './index.module.scss';
+
 import { activateInjectedProvider, ProviderType } from '../../utils/injected';
 import { useWeb3React } from '@web3-react/core';
 import {
   injected as MetaMaskConnector,
   coinbaseWallet as CoinbaseConnector,
-  walletlink as WalletLinkConnector,
+  walletConnect as WalletConnectConnector,
 } from '../../connectors';
-import { getDisplayAddress } from '../../utils';
 import useWeb3Hook from '../../hooks/useWeb3Hook';
-import { Web3Context } from '../../context/web3Context';
+
+import MetamaskIcon from '../../public/assets/wallets/metamask.png';
+import CoinbaseIcon from '../../public/assets/wallets/coinbase.png';
+import WalletConnectIcon from '../../public/assets/wallets/walletconnect.png';
+
+import { getDisplayAddress } from '../../utils';
 
 const ConnectWallet = () => {
-  const { appState: Web3State } = useContext(Web3Context);
-  const { account, active, activate, deactivate } = useWeb3React();
+  const { library, account, active, activate, deactivate } = useWeb3React();
   const { onConnect } = useWeb3Hook();
 
   const handleConnectMetamask = async () => {
     try {
       activateInjectedProvider(ProviderType.METAMASK);
-      activate(MetaMaskConnector);
-      await onConnect();
+      await activate(MetaMaskConnector);
     } catch (error) {
       console.log('Error from connecting to Metamask', error);
     }
@@ -28,39 +33,48 @@ const ConnectWallet = () => {
   const handleConnectCoinbase = async () => {
     try {
       activateInjectedProvider(ProviderType.COINBASE);
-      activate(CoinbaseConnector);
-      await onConnect();
+      await activate(CoinbaseConnector);
     } catch (error) {
       console.log('Error from connecting to Coinbase', error);
     }
   };
 
-  const handleConnectWalletLink = async () => {
+  const handleConnectWalletConnect = async () => {
     try {
-      activate(WalletLinkConnector);
-      await onConnect();
+      await activate(WalletConnectConnector);
     } catch (error) {
-      console.log('Error from connecting to Coinbase', error);
+      console.log('Error from connecting to WalletConnect', error);
     }
   };
+
+  useEffect(() => {
+    if (!library) return;
+    onConnect(library);
+  }, [account, active]);
 
   return (
-    <div>
+    <div className={styles.container}>
       {account && active ? (
         <>
-          <p>Address: </p>
-          {getDisplayAddress(account)}
+          <p>
+            Address:
+            {getDisplayAddress(account)}
+          </p>
           <button onClick={deactivate}>Disconnect</button>
-          <button onClick={() => console.log(Web3State)}>
-            Print Web3State
-          </button>
-          {Web3State.address}
         </>
       ) : (
         <>
-          <button onClick={handleConnectMetamask}>Metamask</button>
-          <button onClick={handleConnectCoinbase}>Coinbase</button>
-          <button onClick={handleConnectWalletLink}>WalletLink</button>
+          <button onClick={handleConnectMetamask}>
+            <img src={MetamaskIcon.src} alt='Metamask Icon' /> Metamask
+          </button>
+          <button onClick={handleConnectCoinbase}>
+            <img src={CoinbaseIcon.src} alt='Coinbase Icon' />
+            Coinbase
+          </button>
+          <button onClick={handleConnectWalletConnect}>
+            <img src={WalletConnectIcon.src} alt='WalletConnect Icon' />
+            WalletConnect
+          </button>
         </>
       )}
     </div>
