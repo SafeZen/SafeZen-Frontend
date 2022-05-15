@@ -11,12 +11,12 @@ import { SET_WEB3_PROVIDER } from '../context/actionType';
 const useWeb3Hook = () => {
   const { appDispatch } = useContext(Web3Context);
 
-  const onConnect = async () => {
+  const onConnect = async (library: any) => {
     try {
-      const _selectedProvider = window.ethereum.providers
-        ? window.ethereum.selectedProvider
-        : window.ethereum;
-      const provider = new ethers.providers.Web3Provider(_selectedProvider);
+      // const _selectedProvider = window.ethereum.providers
+      //   ? window.ethereum.selectedProvider
+      //   : window.ethereum;
+      const provider = new ethers.providers.Web3Provider(library._provider);
       const { chainId } = await provider.getNetwork();
       const signer = provider.getSigner();
       appDispatch({
