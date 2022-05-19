@@ -1,6 +1,8 @@
 import styles from '../styles/Home.module.scss';
 import Meta from '../components/Meta';
-import ConnectWallet from '../components/ConnectWallet';
+import Slogan from '../components/Slogan';
+import Categories from '../components/Categories';
+import CurrentPolicies from '../components/CurrentPolicies';
 
 export default function Home() {
   return (
@@ -8,7 +10,9 @@ export default function Home() {
       <Meta />
 
       <main className={styles.main}>
-        <ConnectWallet />
+        <Slogan />
+        <Categories />
+        <CurrentPolicies />
       </main>
     </div>
   );

@@ -17,6 +17,7 @@ const Web3Reducer = (
         ...state,
         userOnChainId: action.value.userOnChainId,
         provider: action.value.provider,
+        web3ReactLibrary: action.value.web3ReactLibrary,
       };
     case RESET_WEB3_PROVIDER:
       return InitialAppContextState;

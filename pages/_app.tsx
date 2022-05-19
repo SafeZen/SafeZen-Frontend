@@ -3,6 +3,7 @@ import type { AppProps } from 'next/app';
 import { Web3ReactProvider } from '@web3-react/core';
 import Web3 from 'web3';
 import Web3ContextProvider from '../context/web3Context';
+import Layout from '../components/Layout';
 
 // For Web3 Provider
 const getLibrary = (provider: any) => {
@@ -13,7 +14,9 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Web3ReactProvider getLibrary={getLibrary}>
       <Web3ContextProvider>
-        <Component {...pageProps} />
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
       </Web3ContextProvider>
     </Web3ReactProvider>
   );

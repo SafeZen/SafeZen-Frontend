@@ -17,7 +17,8 @@ const useNetwork = () => {
       window.location.hostname &&
       window.location.hostname === 'localhost'
     ) {
-      return 31337;
+      // return 31337;
+      return 4;
     } else if (envConfig.MAINNET) {
       return 1;
     } else {
@@ -59,7 +60,7 @@ const useNetwork = () => {
 
     const handleAccountsChanged = () => {
       // When user changes their account, it will trigger an connection
-      onConnect();
+      onConnect(Web3State.web3ReactLibrary);
     };
 
     const handleChainChanged = () => {

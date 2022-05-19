@@ -1,5 +1,8 @@
-$primary-color: #ffffff;
-$secondary-color: #ffffff;
+$black: #000000;
+$white: #ffffff;
+
+$light: #dee4e7;
+$dark: #37474f;
 
 $screen-xs: 320px;
 $screen-s: 480px;
@@ -9,7 +12,6 @@ $screen-xl: 1200px;
 $screen-xxl: 1450px;
 
 :export {
-  primaryColor: $primary-color;
   screenXS: $screen-xs;
   screenS: $screen-s;
   screenM: $screen-m;

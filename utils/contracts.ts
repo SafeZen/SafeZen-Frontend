@@ -15,8 +15,11 @@ export const getContract = (contractName: string, chainId: number) => {
 
   try {
     /* eslint-disable global-require */
+    console.log(contractName);
+    console.log(chain);
     const contract = require(`../contracts/${chain}/${contractName}.json`);
     /* eslint-enable global-require */
+    console.log(contract);
     return new ethers.Contract(
       envConfig.CONTRACT_ADDRESS,
       contract.abi,

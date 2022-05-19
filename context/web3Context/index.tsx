@@ -5,6 +5,7 @@ export interface IAppContextState {
   userOnChainId: number;
   provider: any;
   address: string;
+  web3ReactLibrary: any;
 }
 
 export interface InitialContextProps {
@@ -16,6 +17,7 @@ export const InitialAppContextState: IAppContextState = {
   userOnChainId: 0,
   provider: null,
   address: '',
+  web3ReactLibrary: null,
 };
 
 export const Web3Context = createContext({} as InitialContextProps);

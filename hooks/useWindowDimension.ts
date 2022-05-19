@@ -18,6 +18,8 @@ const getWindowDimensions = (window: Window) => {
 };
 
 const useWindowDimensions = () => {
+  const LARGE_SCREEN_SIZE = 1024;
+
   const [windowDimensions, setWindowDimensions] = useState<IDimension>({
     width: 0,
     height: 0,
@@ -33,7 +35,7 @@ const useWindowDimensions = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  return { windowDimensions };
+  return { windowDimensions, LARGE_SCREEN_SIZE };
 };
 
 export default useWindowDimensions;
