@@ -18,11 +18,12 @@ const useNetwork = () => {
       window.location.hostname === 'localhost'
     ) {
       // return 31337;
-      return 4;
+      // return 4;
+      return 80001;
     } else if (envConfig.MAINNET) {
-      return 1;
+      return 137;
     } else {
-      return 4;
+      return 80001;
     }
   };
 
@@ -32,6 +33,7 @@ const useNetwork = () => {
     4: 'Rinkeby testnet',
     31337: 'Localhost',
     137: 'Polygon network',
+    80001: 'Mumbai testnet',
   };
 
   const checkNetwork = async () => {

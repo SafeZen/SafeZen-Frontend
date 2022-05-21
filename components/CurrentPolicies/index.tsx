@@ -1,20 +1,31 @@
 /* eslint-disable @next/next/no-img-element */
 import { useWeb3React } from '@web3-react/core';
+import Link from 'next/link';
 import { useEffect } from 'react';
+import usePolicy from '../../hooks/usePolicy';
 import styles from './index.module.scss';
 
 const Policies = () => {
   const { account, active } = useWeb3React();
 
-  // IF ACCOUNT AND ACTIVE, WE WILL CALL THE SC FETCH ALL THEIR POLICIES
-  useEffect(() => {}, []);
+  const { data } = usePolicy(account);
 
   return (
     <div className={styles.container}>
+      {console.log('Current Policies', data)}
       <div className={styles.main}>
         <h3>Your Policies</h3>
         {account && active ? (
-          <div>DISPLAY POLICIES</div>
+          <div>
+            {data.tokenId && (
+              <Link href={`/policy/${data.tokenId}`}>
+                <img
+                  src={data.tokenPolicyImage}
+                  alt={`Policy_${data.tokenId}`}
+                />
+              </Link>
+            )}
+          </div>
         ) : (
           <h4>Please connect your wallet to view your existing policies</h4>
         )}

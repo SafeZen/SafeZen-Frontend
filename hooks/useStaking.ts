@@ -1,15 +1,12 @@
 import { useContext, useState } from 'react';
-import envConfig from '../utils/envConfig';
-import { ethers, Contract } from 'ethers';
-import { getMainContract } from '../utils/contracts';
+import { ethers } from 'ethers';
+import { getStakingContract } from '../utils/contracts';
 
 import responseCodeEnum from '../utils/constants/responseCode';
 import useNetwork from './useNetwork';
 import { Web3Context } from '../context/web3Context';
 
-const INSUFFICIENT_FUNDS_ERROR_CODE = 'INSUFFICIENT_FUNDS';
-
-const useMint = () => {
+const useStaking = () => {
   const { checkNetworkName } = useNetwork();
 
   const { appState: Web3State } = useContext(Web3Context);
@@ -27,34 +24,29 @@ const useMint = () => {
     baseAmount: Number;
   }
 
-  const prepareTransactionOptionMint = async (
-    contract: Contract,
-    account: string,
-    policyDetails: IPolicy
-  ) => {
-    // console.log(ethers.utils.parseEther(String(policyDetails.baseAmount)));
-    // const _wei = (policyDetails.baseAmount as number) * Math.pow(10, 18);
+  const prepareTransactionOptionMint = async (account: string) => {
     return {
       from: account,
-      value: ethers.utils.parseEther(String(policyDetails.baseAmount)).mul(1),
     };
   };
 
-  const mint = async (account: string, policyDetails: IPolicy) => {
+  const redeemRewards = async (account: string, _policyId: number) => {
     setLoading(true);
     setError('');
 
-    if (!policyDetails || !account) {
+    if (!_policyId || !account) {
       setTransactionHash('');
       setResponseCode(responseCodeEnum.BAD_REQUEST);
-      setError('Please ensure that you are minting at least one.');
+      setError(
+        'Please ensure that you are providing the required information.'
+      );
 
       return;
     }
 
     // Prepare contract
     const chainId = checkNetworkName();
-    const NFTContract = getMainContract(chainId);
+    const NFTContract = getStakingContract(chainId);
 
     if (!NFTContract) {
       setError('Contract does not exist.');
@@ -63,33 +55,19 @@ const useMint = () => {
     const signer = Web3State.provider.getSigner();
     const contract = NFTContract.connect(signer);
 
-    if (!Web3State.address) {
-      setTransactionHash('');
-      setResponseCode(responseCodeEnum.BAD_REQUEST);
-      setError('User has yet to connect wallet.');
-    }
-
     // Prepare transaction options
-    const transactionOptions = await prepareTransactionOptionMint(
-      contract,
-      account,
-      policyDetails
-    );
+    const transactionOptions = await prepareTransactionOptionMint(account);
 
     try {
-      const tx = await contract.mint(
-        policyDetails.policyType,
-        policyDetails.coverageAmount,
-        policyDetails.merchant,
-        policyDetails.minFlowRate,
-        ethers.utils.parseEther(String(policyDetails.baseAmount)).mul(1),
+      const tx = await contract.claimRewardTokens(
+        _policyId,
         transactionOptions
       );
 
       const receipt = await tx.wait();
       const txnHash = await receipt.transactionHash;
 
-      console.log('TransactionHash from useMint', txnHash);
+      console.log('TransactionHash from useStaking', txnHash);
 
       setTransactionHash(txnHash);
       setResponseCode(responseCodeEnum.SUCCESS);
@@ -126,20 +104,13 @@ const useMint = () => {
     setLoading(false);
   };
 
-  const clearData = () => {
-    setTransactionHash('');
-    setError('');
-    setResponseCode(0);
-  };
-
   return {
     transactionHash,
     responseCode,
     error,
     loading,
-    mint,
-    clearData,
+    redeemRewards,
   };
 };
 
-export default useMint;
+export default useStaking;

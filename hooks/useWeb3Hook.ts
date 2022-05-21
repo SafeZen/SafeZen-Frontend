@@ -13,12 +13,11 @@ const useWeb3Hook = () => {
 
   const onConnect = async (_web3library: any) => {
     try {
-      // const _selectedProvider = window.ethereum.providers
-      //   ? window.ethereum.selectedProvider
-      //   : window.ethereum;
-      const provider = new ethers.providers.Web3Provider(
-        _web3library._provider
-      );
+      const _selectedProvider = window.ethereum.providers
+        ? window.ethereum.selectedProvider
+        : window.ethereum;
+      // _web3library._provider
+      const provider = new ethers.providers.Web3Provider(_selectedProvider);
       console.log('Provider', provider);
       const { chainId } = await provider.getNetwork();
       const signer = provider.getSigner();

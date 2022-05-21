@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import envConfig from '../utils/envConfig';
 import { Contract } from 'ethers';
-import { getContract } from '../utils/contracts';
+import { getMainContract } from '../utils/contracts';
 
 import useNetwork from './useNetwork';
 
@@ -15,7 +15,7 @@ const useContract = () => {
 
   const initialFunc = () => {
     const networkName = checkNetworkName();
-    const NFTContract = getContract(envConfig.CONTRACT_NAME, networkName);
+    const NFTContract = getMainContract(networkName);
     setContract(NFTContract);
   };
 

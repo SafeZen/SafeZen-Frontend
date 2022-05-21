@@ -1,15 +1,12 @@
 import { useContext, useState } from 'react';
-import envConfig from '../utils/envConfig';
-import { ethers, Contract } from 'ethers';
-import { getMainContract } from '../utils/contracts';
+import { ethers } from 'ethers';
+import { getGovernanceContract } from '../utils/contracts';
 
 import responseCodeEnum from '../utils/constants/responseCode';
 import useNetwork from './useNetwork';
 import { Web3Context } from '../context/web3Context';
 
-const INSUFFICIENT_FUNDS_ERROR_CODE = 'INSUFFICIENT_FUNDS';
-
-const useMint = () => {
+const useGovernance = () => {
   const { checkNetworkName } = useNetwork();
 
   const { appState: Web3State } = useContext(Web3Context);
@@ -27,34 +24,34 @@ const useMint = () => {
     baseAmount: Number;
   }
 
-  const prepareTransactionOptionMint = async (
-    contract: Contract,
-    account: string,
-    policyDetails: IPolicy
-  ) => {
-    // console.log(ethers.utils.parseEther(String(policyDetails.baseAmount)));
-    // const _wei = (policyDetails.baseAmount as number) * Math.pow(10, 18);
+  const prepareTransactionOptionMint = async (account: string) => {
     return {
       from: account,
-      value: ethers.utils.parseEther(String(policyDetails.baseAmount)).mul(1),
     };
   };
 
-  const mint = async (account: string, policyDetails: IPolicy) => {
+  const submitClaim = async (
+    account: string,
+    _policyId: number,
+    _proof: string,
+    _claimAmount: number
+  ) => {
     setLoading(true);
     setError('');
 
-    if (!policyDetails || !account) {
+    if (!_policyId || !account || !_proof || !_claimAmount) {
       setTransactionHash('');
       setResponseCode(responseCodeEnum.BAD_REQUEST);
-      setError('Please ensure that you are minting at least one.');
+      setError(
+        'Please ensure that you are providing the required information.'
+      );
 
       return;
     }
 
     // Prepare contract
     const chainId = checkNetworkName();
-    const NFTContract = getMainContract(chainId);
+    const NFTContract = getGovernanceContract(chainId);
 
     if (!NFTContract) {
       setError('Contract does not exist.');
@@ -63,33 +60,22 @@ const useMint = () => {
     const signer = Web3State.provider.getSigner();
     const contract = NFTContract.connect(signer);
 
-    if (!Web3State.address) {
-      setTransactionHash('');
-      setResponseCode(responseCodeEnum.BAD_REQUEST);
-      setError('User has yet to connect wallet.');
-    }
-
     // Prepare transaction options
-    const transactionOptions = await prepareTransactionOptionMint(
-      contract,
-      account,
-      policyDetails
-    );
+    const transactionOptions = await prepareTransactionOptionMint(account);
 
     try {
-      const tx = await contract.mint(
-        policyDetails.policyType,
-        policyDetails.coverageAmount,
-        policyDetails.merchant,
-        policyDetails.minFlowRate,
-        ethers.utils.parseEther(String(policyDetails.baseAmount)).mul(1),
+      console.log('account', account);
+      const tx = await contract.ApplyClaim(
+        _policyId,
+        _proof,
+        ethers.utils.parseEther(String(_claimAmount)),
         transactionOptions
       );
 
       const receipt = await tx.wait();
       const txnHash = await receipt.transactionHash;
 
-      console.log('TransactionHash from useMint', txnHash);
+      console.log('TransactionHash from useGovernance', txnHash);
 
       setTransactionHash(txnHash);
       setResponseCode(responseCodeEnum.SUCCESS);
@@ -126,10 +112,38 @@ const useMint = () => {
     setLoading(false);
   };
 
-  const clearData = () => {
-    setTransactionHash('');
+  const checkClaimStatus = async (_claimId: number) => {
+    setLoading(true);
     setError('');
-    setResponseCode(0);
+
+    if (!_claimId) {
+      setTransactionHash('');
+      setResponseCode(responseCodeEnum.BAD_REQUEST);
+      setError('Please ensure that you are providing a valid claim id.');
+
+      return;
+    }
+
+    // Prepare contract
+    const chainId = checkNetworkName();
+    const NFTContract = getGovernanceContract(chainId);
+
+    if (!NFTContract) {
+      setError('Contract does not exist.');
+      return;
+    }
+
+    if (!Web3State.provider) {
+      setError('Provider does not exist.');
+      return;
+    }
+
+    const contract = NFTContract.connect(Web3State.provider);
+    const isClaimSuccessful = await contract.checkDecision(_claimId);
+
+    setLoading(false);
+
+    return isClaimSuccessful;
   };
 
   return {
@@ -137,9 +151,9 @@ const useMint = () => {
     responseCode,
     error,
     loading,
-    mint,
-    clearData,
+    submitClaim,
+    checkClaimStatus,
   };
 };
 
-export default useMint;
+export default useGovernance;

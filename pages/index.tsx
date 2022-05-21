@@ -7,8 +7,6 @@ import CurrentPolicies from '../components/CurrentPolicies';
 export default function Home() {
   return (
     <div className={styles.container}>
-      <Meta />
-
       <main className={styles.main}>
         <Slogan />
         <Categories />

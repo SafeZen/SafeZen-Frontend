@@ -8,23 +8,63 @@ import envConfig from './envConfig';
  * @param {*} chainId - number
  * @returns Contract
  */
-export const getContract = (contractName: string, chainId: number) => {
+export const getMainContract = (chainId: number) => {
   let chain = chainMap[chainId];
 
   if (!envConfig.CONTRACT_ADDRESS || !envConfig.CONTRACT_DEPLOYED) return;
 
   try {
     /* eslint-disable global-require */
-    console.log(contractName);
     console.log(chain);
-    const contract = require(`../contracts/${chain}/${contractName}.json`);
+    const contract = require(`../contracts/${chain}/SafeZen.json`);
     /* eslint-enable global-require */
-    console.log(contract);
+    return new ethers.Contract(envConfig.SAFEZEN_CA, contract.abi, undefined);
+  } catch (error) {
+    console.error('Contract does not exist!');
+  }
+};
+
+/**
+ * Gets Deployed Contract from contracts folder
+ * @param {*} contractName - string
+ * @param {*} chainId - number
+ * @returns Contract
+ */
+export const getGovernanceContract = (chainId: number) => {
+  let chain = chainMap[chainId];
+
+  if (!envConfig.CONTRACT_ADDRESS || !envConfig.CONTRACT_DEPLOYED) return;
+
+  try {
+    /* eslint-disable global-require */
+    const contract = require(`../contracts/${chain}/Governance.json`);
+    /* eslint-enable global-require */
     return new ethers.Contract(
-      envConfig.CONTRACT_ADDRESS,
+      envConfig.GOVERNANCE_CA,
       contract.abi,
       undefined
     );
+  } catch (error) {
+    console.error('Contract does not exist!');
+  }
+};
+
+/**
+ * Gets Deployed Contract from contracts folder
+ * @param {*} contractName - string
+ * @param {*} chainId - number
+ * @returns Contract
+ */
+export const getStakingContract = (chainId: number) => {
+  let chain = chainMap[chainId];
+
+  if (!envConfig.CONTRACT_ADDRESS || !envConfig.CONTRACT_DEPLOYED) return;
+
+  try {
+    /* eslint-disable global-require */
+    const contract = require(`../contracts/${chain}/Staking.json`);
+    /* eslint-enable global-require */
+    return new ethers.Contract(envConfig.STAKING_CA, contract.abi, undefined);
   } catch (error) {
     console.error('Contract does not exist!');
   }
