@@ -9,6 +9,9 @@ This repository contains all frontend code written for project SafeZen as part o
 - Run `npm run dev`
 - Open [http://localhost:3000](http://localhost:3000)
 
+## Important Note
+This application will be using Superfluid to flow DAIx from your wallet to the SafeZen contract. This application will be working on the assumption that you are already in possession of DAIx. If you do not have DAIx in your wallet, head over to [SuperFluid Dashboard](https://app.superfluid.finance/dashboard) and get some free DAIx tokens to use our application.
+
 ## Environment Variables
 
 NEXT_PUBLIC_INFURA_ID - Infura project id
