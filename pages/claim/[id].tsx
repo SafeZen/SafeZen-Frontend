@@ -20,8 +20,6 @@ const Claim = () => {
   const [claimAmount, setClaimAmount] = useState<string>('0');
   const [proof, setProof] = useState<File>();
 
-  const [claimId, setClaimId] = useState<any>();
-
   useEffect(() => {
     if (router && router.query && router.query.id) {
       const _tokenId = (router.query.id as string) || '0';
@@ -44,7 +42,6 @@ const Claim = () => {
   };
 
   const handleClaim = async () => {
-    console.log('Submitting Claim');
     if (!account) return; // No account
     if (tokenId <= 0) return; // Invalid tokenId
     if (!dateOfIncident || !fullName || !proof || !claimAmount) return; // No Details
@@ -74,7 +71,7 @@ const Claim = () => {
               <input
                 type='text'
                 value={dateOfIncident}
-                placeholder='Please key in format of YYYY-MM-DD'
+                placeholder='Format of YYYY-MM-DD'
                 onChange={(e) => setDateOfIncident(e.target.value)}
               />
             </div>
@@ -100,9 +97,21 @@ const Claim = () => {
             </div>
 
             <div className={styles.action}>
-              <button type='button' onClick={handleClaim}>
-                Claim
-              </button>
+              <>
+                {loading ? (
+                  <button
+                    type='button'
+                    className={styles.loading}
+                    disabled={true}
+                  >
+                    Claiming
+                  </button>
+                ) : (
+                  <button type='button' onClick={handleClaim}>
+                    Claim
+                  </button>
+                )}
+              </>
             </div>
 
             {error && <p>An error happened while claiming: {error}</p>}

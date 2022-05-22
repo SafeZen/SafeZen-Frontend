@@ -12,7 +12,6 @@ const Policies = () => {
 
   return (
     <div className={styles.container}>
-      {console.log('Current Policies', data)}
       <div className={styles.main}>
         <h3>Your Policies</h3>
         {account && active ? (

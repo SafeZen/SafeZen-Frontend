@@ -54,7 +54,6 @@ export const walletConnect = new WalletConnectConnector({
     137: generateRPCUrl(137),
     80001: generateRPCUrl(80001),
     31337: generateRPCUrl(31337),
-    4: generateRPCUrl(4),
   },
   infuraId: envConfig.INFURA_ID,
   bridge: 'https://bridge.walletconnect.org',

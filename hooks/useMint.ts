@@ -32,8 +32,6 @@ const useMint = () => {
     account: string,
     policyDetails: IPolicy
   ) => {
-    // console.log(ethers.utils.parseEther(String(policyDetails.baseAmount)));
-    // const _wei = (policyDetails.baseAmount as number) * Math.pow(10, 18);
     return {
       from: account,
       value: ethers.utils.parseEther(String(policyDetails.baseAmount)).mul(1),

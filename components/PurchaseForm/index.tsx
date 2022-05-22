@@ -5,7 +5,11 @@ import styles from './index.module.scss';
 import useMint from '../../hooks/useMint';
 import { Web3Context } from '../../context/web3Context';
 import Select from 'react-select';
-import calculation from '../../utils/constants/policyCostCalculations';
+import Dropdown from 'react-dropdown';
+import 'react-dropdown/style.css';
+import calculation, {
+  WeiPerSecondToEthPerDay,
+} from '../../utils/constants/policyCostCalculations';
 interface IOption {
   value: string;
   label: string;
@@ -103,29 +107,27 @@ const PurchaseForm = ({
         <div className={styles.content}>
           <div>
             <p>Coverage Amount:</p>
-            <Select
+            <Dropdown
+              value={selectedCoverage}
               options={coverageOptions}
-              defaultValue={selectedCoverage}
               onChange={(e) => handleCoverageChange(e)}
-              isSearchable={false}
             />
           </div>
           <div>
             <p>Merchant:</p>
-            <Select
+            <Dropdown
+              value={selectedMerchant}
               options={merchantOptions}
-              defaultValue={selectedMerchant}
               onChange={(e) => handleMerchantChange(e)}
-              isSearchable={false}
             />
           </div>
           <div>
             <p>Flow Rate:</p>
-            <p>{flowRate}</p>
+            <p>{WeiPerSecondToEthPerDay(flowRate)} DAIx/day</p>
           </div>
           <div>
             <p>Base Price:</p>
-            <p>{baseAmount}</p>
+            <p>{baseAmount} MATIC</p>
           </div>
 
           {!loading && transactionHash && !error ? (
@@ -136,6 +138,7 @@ const PurchaseForm = ({
                 wordBreak: 'break-word',
               }}
             >
+              Your purchase transaction url is:{' '}
               <a
                 href={`https://mumbai.polygonscan.com/tx/${transactionHash}`}
                 target='_blank'
@@ -145,9 +148,21 @@ const PurchaseForm = ({
               </a>
             </p>
           ) : (
-            <button type='button' onClick={handlePurchase}>
-              Buy
-            </button>
+            <>
+              {loading ? (
+                <button
+                  type='button'
+                  className={styles.loading}
+                  disabled={true}
+                >
+                  Buying
+                </button>
+              ) : (
+                <button type='button' onClick={handlePurchase}>
+                  Buy
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>

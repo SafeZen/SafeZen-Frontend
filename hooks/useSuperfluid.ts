@@ -21,7 +21,6 @@ const useSuperFluid = () => {
 
   const initializeSuperFluidContract = async () => {
     try {
-      console.log('Web3State', Web3State);
       const sf = await Framework.create({
         chainId: Web3State.userOnChainId,
         provider: Web3State.provider,
@@ -29,19 +28,6 @@ const useSuperFluid = () => {
 
       const _MATICxContract = await sf.loadSuperToken('MATICx');
       const _fDAIxContract = await sf.loadSuperToken('fDAIx');
-
-      console.log('useSuperFluid', {
-        sf,
-        _MATICxContract,
-        _fDAIxContract,
-      });
-
-      // const something = await _MATICxContract.balanceOf({
-      //   account: '0xDcb0499ddc3Cd842d136Df23D489A84d5cedFa9e',
-      //   providerOrSigner: Web3State.provider,
-      // });
-
-      // console.log('My MATICx', something);
 
       SuperFluidDispatch({
         type: SET_SUPERFLUID_CONTRACT,
@@ -57,7 +43,6 @@ const useSuperFluid = () => {
   };
 
   const createNewFlow = async (_flowRate: string) => {
-    console.log('Start of createNewFlow function');
     const recipient = envConfig.SAFEZEN_CA;
 
     const _sf = SuperFluidState.SuperTokenFactory;

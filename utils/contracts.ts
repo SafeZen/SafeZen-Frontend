@@ -15,7 +15,6 @@ export const getMainContract = (chainId: number) => {
 
   try {
     /* eslint-disable global-require */
-    console.log(chain);
     const contract = require(`../contracts/${chain}/SafeZen.json`);
     /* eslint-enable global-require */
     return new ethers.Contract(envConfig.SAFEZEN_CA, contract.abi, undefined);

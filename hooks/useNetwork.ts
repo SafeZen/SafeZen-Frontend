@@ -70,13 +70,13 @@ const useNetwork = () => {
       window.location.reload();
     };
     if (window.ethereum) {
-      window.ethereum.on('chainChanged', handleChainChanged);
+      // window.ethereum.on('chainChanged', handleChainChanged);
       window.ethereum.on('accountsChanged', handleAccountsChanged);
     }
 
     return () => {
       window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-      window.ethereum.removeListener('chainChanged', handleChainChanged);
+      // window.ethereum.removeListener('chainChanged', handleChainChanged);
     };
   }, [Web3State.userOnChainId]);
 

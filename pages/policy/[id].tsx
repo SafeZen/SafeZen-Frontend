@@ -7,6 +7,15 @@ import useSuperFluid from '../../hooks/useSuperfluid';
 import usePolicy from '../../hooks/usePolicy';
 import { getDisplayAddress } from '../../utils';
 import useStaking from '../../hooks/useStaking';
+import { ethers } from 'ethers';
+import useGovernance from '../../hooks/useGovernance';
+import { WeiPerSecondToEthPerDay } from '../../utils/constants/policyCostCalculations';
+
+enum CLAIM_STATUS {
+  YET_TO_SUBMIT,
+  SUBMITTED,
+  SUCCESSFUL,
+}
 
 const Policy = () => {
   const { account, active } = useWeb3React();
@@ -25,18 +34,32 @@ const Policy = () => {
     amountPaid: 0,
     baseAmount: 0,
   });
+  const [hasClaimedYield, setHasClaimedYield] = useState<boolean>(false);
+  const [yieldTokenCount, setYieldTokenCount] = useState<string>('0');
+  const [claimStatus, setClaimStatus] = useState<CLAIM_STATUS>(
+    CLAIM_STATUS.YET_TO_SUBMIT
+  );
+  const [streamHash, setStreamHash] = useState<string>('');
+  const [amountPaid, setAmountPaid] = useState<number>(0);
 
-  const { data } = usePolicy(account);
+  const { data, fetchActivationStartTime } = usePolicy(account);
+  const {
+    transactionHash,
+    loading,
+    error,
+    redeemRewards,
+    checkClaimYieldStatus,
+  } = useStaking();
+  const { checkClaimStatus } = useGovernance();
 
   const { MATICxContract, fUSDCxContract, createNewFlow, deleteFlow } =
     useSuperFluid();
-
-  const { transactionHash, loading, error, redeemRewards } = useStaking();
 
   const fetchPolicyMetadata = async (url: any) => {
     try {
       const response = await fetch(url);
       const result = await response.json();
+      console.log('fetchPolicyMetadata', result);
     } catch (error) {
       console.log(error);
     }
@@ -50,8 +73,58 @@ const Policy = () => {
     }
   }, [router]);
 
+  const checkClaimYieldFunction = async (_tokenId: number) => {
+    if (_tokenId <= 0) return;
+    const yieldClaimStatus = await checkClaimYieldStatus(_tokenId);
+    setHasClaimedYield(yieldClaimStatus?.claimed);
+    setYieldTokenCount(
+      yieldClaimStatus?.yieldTokenCount
+        ? (Number(yieldClaimStatus?.yieldTokenCount) * 10 ** -18).toFixed(5)
+        : '0'
+    );
+  };
+
+  const checkClaimStatusFunction = async (_tokenId: number) => {
+    const claimDetails = await checkClaimStatus(data.tokenId);
+    if (Number(claimDetails.Policy_ID) === 0) {
+      setClaimStatus(CLAIM_STATUS.YET_TO_SUBMIT);
+    } else if (claimDetails.claimSuccessful) {
+      setClaimStatus(CLAIM_STATUS.SUCCESSFUL);
+    } else {
+      setClaimStatus(CLAIM_STATUS.SUBMITTED);
+    }
+  };
+
+  const renderClaimText = (_claimStatus: CLAIM_STATUS) => {
+    switch (_claimStatus) {
+      case CLAIM_STATUS.YET_TO_SUBMIT:
+        return 'Yet to submit';
+      case CLAIM_STATUS.SUBMITTED:
+        return 'Submitted';
+      case CLAIM_STATUS.SUCCESSFUL:
+        return 'Successful';
+      default:
+        return 'Yet to submit';
+    }
+  };
+
+  const calculateBaseAmountPaid = async (_tokenId: number) => {
+    if (!_tokenId || _tokenId === 0) return 0;
+    if (!policyDetails.isActive) return 0;
+
+    const _startTime = await fetchActivationStartTime(_tokenId);
+    if (_startTime === 0 || !_startTime) return 0;
+
+    const _currentTime = new Date().getTime();
+    const _timeDifferenceInSeconds = (_currentTime - _startTime) / 1000;
+    const amountPaidInWei =
+      policyDetails.minFlowRate * _timeDifferenceInSeconds;
+    setAmountPaid(amountPaidInWei * 10 ** -18);
+    return amountPaidInWei * 10 ** -18;
+  };
+
   useEffect(() => {
-    if (data.tokenPolicy) {
+    if (data.tokenPolicy && policyDetails.policyHolder == '') {
       setPolicyDetails({
         ...policyDetails,
         policyHolder: data.tokenPolicy[0],
@@ -60,31 +133,47 @@ const Policy = () => {
         coverageAmount: Number(data.tokenPolicy[3]),
         merchant: data.tokenPolicy[4],
         minFlowRate: Number(data.tokenPolicy[5]),
-        purchaseTime: Number(data.tokenPolicy[6]),
+        purchaseTime: Number(data.tokenPolicy[6]) * 1000,
         isActive: data.isPolicyActive,
         hasClaimed: data.tokenPolicy[8],
         amountPaid: Number(data.tokenPolicy[9]),
-        baseAmount: Number(data.tokenPolicy[10]),
+        baseAmount: (Number(data.tokenPolicy[10]) * 10 ** -18).toFixed(2),
       });
     }
-  }, [data.tokenPolicy]);
 
-  // useEffect(() => {
-  //   if (data.tokenPolicyMetadata) {
-  //     fetchPolicyMetadata(data.tokenPolicyMetadata);
-  //   }
-  // }, [data.tokenPolicyMetadata]);
+    if (data.tokenId) {
+      checkClaimStatusFunction(data.tokenId);
+      checkClaimYieldFunction(data.tokenId);
+    }
+  }, [data.tokenPolicy, data.tokenId, data.isPolicyActive]);
+
+  useEffect(() => {
+    if (policyDetails.isActive && data.tokenId) {
+      calculateBaseAmountPaid(data.tokenId);
+      setInterval(() => {
+        setAmountPaid(
+          (prevState) => prevState + policyDetails.minFlowRate * 10 ** -18
+        );
+      }, 100);
+    }
+  }, [policyDetails.isActive]);
+
+  useEffect(() => {
+    if (data.tokenPolicyMetadata) {
+      fetchPolicyMetadata(data.tokenPolicyMetadata);
+    }
+  }, [data.tokenPolicyMetadata, streamHash]);
 
   const formatTime = (_timestamp: number) => {
-    // TO FIX TIME STAMP
     const _date = new Date(_timestamp);
-    return `${_date.getDate()} ${_date.getMonth()} ${_date.getFullYear()}`;
+    return `${_date.getDate()}-${_date.getMonth() + 1}-${_date.getFullYear()}`;
   };
 
   const activatePolicy = async () => {
     if (policyDetails.minFlowRate > 0) {
       const result = await createNewFlow(String(policyDetails.minFlowRate));
-      console.log('Activated Stream: ', result);
+      console.log('Activated Stream: ', result.hash);
+      setStreamHash(`Activated Superfluid streamhash: ${result.hash}`);
     }
   };
 
@@ -92,6 +181,7 @@ const Policy = () => {
     if (!policyDetails.isActive) return;
     const result = await deleteFlow();
     console.log('Deactivated Stream: ', result);
+    setStreamHash(`Deactivated Superfluid streamhash: ${result.hash}`);
   };
 
   const handleYieldReward = async () => {
@@ -109,25 +199,55 @@ const Policy = () => {
           </div>
           <div className={styles.content_details}>
             <p>
-              Policy Holder Address:{' '}
+              <b>Policy Holder Address: </b>
               {getDisplayAddress(policyDetails.policyHolder)}
             </p>
-            <p>Policy Id: {policyDetails.policyId}</p>
-            <p>Policy Type: {policyDetails.policyType}</p>
-            <p>Coverage Amount: {policyDetails.coverageAmount}</p>
-            <p>Merchant: {policyDetails.merchant}</p>
-            <p>Flow Rate: {policyDetails.minFlowRate}</p>
-            <p>Purchase Time: {formatTime(policyDetails.purchaseTime)}</p>
             <p>
-              Is policy active?:{' '}
+              <b>Policy Id:</b> {policyDetails.policyId}
+            </p>
+            <p>
+              <b>Policy Type:</b> {policyDetails.policyType}
+            </p>
+            <p>
+              <b>Coverage Amount:</b> {policyDetails.coverageAmount} USD
+            </p>
+            <p>
+              <b>Merchant:</b> {policyDetails.merchant}
+            </p>
+            <p>
+              <b>Flow Rate: </b>
+              {WeiPerSecondToEthPerDay(policyDetails.minFlowRate)} DAIx/day
+            </p>
+            <p>
+              <b>Purchase Time: </b> {formatTime(policyDetails.purchaseTime)}
+            </p>
+            <p>
+              <b>Is policy active?: </b>
+
               {policyDetails.isActive ? 'Active' : 'Inactive'}
             </p>
             <p>
-              Has policy claimed?:{' '}
-              {policyDetails.hasClaimed ? 'Claimed' : 'Yet to be claimed'}
+              <b>Has policy claimed?: </b>
+              {renderClaimText(claimStatus)}
+              {/* {policyDetails.hasClaimed ? 'Claimed' : 'Yet to be claimed'} */}
             </p>
-            <p>Amount Paid: {policyDetails.amountPaid}</p>
-            <p>Policy Cost: {policyDetails.baseAmount}</p>
+
+            <p>
+              <b>Stream Amount Paid: </b>
+              {amountPaid.toFixed(5)} DAIx
+            </p>
+            <p>
+              <b>Policy Cost: </b>
+              {policyDetails.baseAmount} MATIC
+            </p>
+            <p>
+              <b>Yield Amount: </b>
+              {yieldTokenCount} $SZT
+            </p>
+            <p>
+              <b>Has claimed yield?: </b>
+              {hasClaimedYield ? 'Yes' : 'No'}
+            </p>
           </div>
         </div>
 
@@ -141,15 +261,37 @@ const Policy = () => {
               Activate
             </button>
           )}
-          <button
-            type='button'
-            onClick={() => router.push(`/claim/${tokenId}`)}
-          >
-            Claim Insurance
-          </button>
-          <button type='button' onClick={handleYieldReward}>
-            Claim Yield
-          </button>
+
+          {policyDetails.isActive && (
+            <>
+              {claimStatus === CLAIM_STATUS.YET_TO_SUBMIT && (
+                <button
+                  type='button'
+                  onClick={() => router.push(`/claim/${tokenId}`)}
+                >
+                  Claim Insurance
+                </button>
+              )}
+            </>
+          )}
+
+          {!hasClaimedYield && (
+            <>
+              {loading ? (
+                <button
+                  type='button'
+                  className={styles.loading}
+                  disabled={true}
+                >
+                  Claiming
+                </button>
+              ) : (
+                <button type='button' onClick={handleYieldReward}>
+                  Claim Yield
+                </button>
+              )}
+            </>
+          )}
         </div>
 
         {error && <p>Error while claiming yield: {error}</p>}
@@ -169,6 +311,17 @@ const Policy = () => {
             >
               https://mumbai.polygonscan.com/tx/${transactionHash}
             </a>
+          </p>
+        )}
+        {streamHash && (
+          <p
+            style={{
+              fontSize: '1.5rem',
+              width: '50rem',
+              wordBreak: 'break-word',
+            }}
+          >
+            {streamHash}
           </p>
         )}
       </div>

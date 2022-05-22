@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { getStakingContract } from '../utils/contracts';
 
@@ -47,7 +47,7 @@ const useStaking = () => {
     // Prepare contract
     const chainId = checkNetworkName();
     const NFTContract = getStakingContract(chainId);
-
+    console.log('Staking Contract', NFTContract);
     if (!NFTContract) {
       setError('Contract does not exist.');
       return;
@@ -104,12 +104,50 @@ const useStaking = () => {
     setLoading(false);
   };
 
+  const checkClaimYieldStatus = async (_claimId: number) => {
+    setLoading(true);
+    setError('');
+
+    if (!_claimId) {
+      setTransactionHash('');
+      setResponseCode(responseCodeEnum.BAD_REQUEST);
+      setError('Please ensure that you are providing a valid claim id.');
+
+      return;
+    }
+
+    // Prepare contract
+    const chainId = checkNetworkName();
+    const NFTContract = getStakingContract(chainId);
+
+    if (!NFTContract) {
+      setError('Contract does not exist.');
+      return;
+    }
+
+    if (!Web3State.provider) {
+      setError('Provider does not exist.');
+      return;
+    }
+
+    const contract = NFTContract.connect(Web3State.provider);
+    const claimed = await contract.hasClaimedRewards(_claimId);
+    const yieldTokenCount = await contract.eligibleRewardTokenCount(_claimId);
+    setLoading(false);
+
+    return {
+      claimed,
+      yieldTokenCount: Number(yieldTokenCount),
+    };
+  };
+
   return {
     transactionHash,
     responseCode,
     error,
     loading,
     redeemRewards,
+    checkClaimYieldStatus,
   };
 };
 

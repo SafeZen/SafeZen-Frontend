@@ -35,6 +35,15 @@ const usePolicy = (account: string | null | undefined) => {
   const [responseCode, setResponseCode] = useState<number>();
   const [loading, setLoading] = useState<boolean>(false);
 
+  const fetchPolicyMetadata = async (url: any) => {
+    try {
+      const response = await fetch(url);
+      const result = await response.json();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -88,7 +97,7 @@ const usePolicy = (account: string | null | undefined) => {
       const tokenPolicyMetadata = await contract.buildMetadata(_tokenId);
       const tokenPolicyImage = await contract.buildPolicy(_tokenId);
       const isPolicyActive = await contract.isActive(_tokenId);
-      const isPolicyClaimed = await contract.isClaimed(_tokenId);
+      // const isPolicyClaimed = await contract.isClaimed(_tokenId);
 
       setData({
         tokenId: _tokenId,
@@ -96,7 +105,7 @@ const usePolicy = (account: string | null | undefined) => {
         tokenPolicyMetadata,
         tokenPolicyImage: `data:image/svg+xml;base64,${tokenPolicyImage}`,
         isPolicyActive,
-        isPolicyClaimed,
+        isPolicyClaimed: false,
       });
     } catch (error) {
       console.log('Error from usePolicy', error);
@@ -119,6 +128,44 @@ const usePolicy = (account: string | null | undefined) => {
     setLoading(false);
   };
 
+  const fetchActivationStartTime = async (_tokenId: number) => {
+    setLoading(true);
+    try {
+      const chainId = checkNetworkName();
+      const NFTContract = getMainContract(chainId);
+
+      if (!account) {
+        setError('User has yet to connect wallet.');
+        return 0;
+      }
+
+      if (!NFTContract) {
+        setError('Contract does not exist.');
+        return 0;
+      }
+
+      if (!Web3State.provider) {
+        setError('Provider does not exist.');
+        return 0;
+      }
+
+      if (!data.isPolicyActive) return 0;
+      if (!_tokenId || _tokenId === 0) return 0;
+
+      const contract = NFTContract.connect(Web3State.provider);
+      const startTime = await contract.getPolicyActivationTime(_tokenId);
+
+      return Number(startTime) * 1000;
+    } catch (error) {
+      console.log('Error from usePolicy', error);
+
+      setError(
+        'Something went wrong with fetching user minting limits. Please refresh the page.'
+      );
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (
       !data.tokenPolicy &&
@@ -132,7 +179,14 @@ const usePolicy = (account: string | null | undefined) => {
     }
   }, [networkError, checkingNetwork, account, Web3State.provider]);
 
-  return { data, error, responseCode, loading, fetchData };
+  return {
+    data,
+    error,
+    responseCode,
+    loading,
+    fetchData,
+    fetchActivationStartTime,
+  };
 };
 
 export default usePolicy;

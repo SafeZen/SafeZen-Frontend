@@ -64,7 +64,6 @@ const useGovernance = () => {
     const transactionOptions = await prepareTransactionOptionMint(account);
 
     try {
-      console.log('account', account);
       const tx = await contract.ApplyClaim(
         _policyId,
         _proof,
@@ -127,7 +126,6 @@ const useGovernance = () => {
     // Prepare contract
     const chainId = checkNetworkName();
     const NFTContract = getGovernanceContract(chainId);
-
     if (!NFTContract) {
       setError('Contract does not exist.');
       return;
@@ -139,11 +137,10 @@ const useGovernance = () => {
     }
 
     const contract = NFTContract.connect(Web3State.provider);
-    const isClaimSuccessful = await contract.checkDecision(_claimId);
-
+    const claimDetails = await contract.claims(_claimId);
     setLoading(false);
 
-    return isClaimSuccessful;
+    return claimDetails;
   };
 
   return {
