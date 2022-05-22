@@ -169,7 +169,6 @@ const usePolicy = (account: string | null | undefined) => {
   useEffect(() => {
     if (
       !data.tokenPolicy &&
-      envConfig.CONTRACT_DEPLOYED &&
       !networkError &&
       !checkingNetwork &&
       account &&

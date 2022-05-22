@@ -78,10 +78,7 @@ const useSuperFluid = () => {
 
     try {
       if (_sf && Web3State.provider && account) {
-        const signer = _sf.createSigner({
-          privateKey: `${envConfig.PRIVATE_KEY}`,
-          provider: Web3State.provider,
-        });
+        const signer = Web3State.provider.getSigner();
 
         const fDAIx = await SuperFluidState.fDAIxContract.address;
 

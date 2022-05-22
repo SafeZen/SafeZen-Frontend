@@ -17,8 +17,6 @@ const useNetwork = () => {
       window.location.hostname &&
       window.location.hostname === 'localhost'
     ) {
-      // return 31337;
-      // return 4;
       return 80001;
     } else if (envConfig.MAINNET) {
       return 137;
